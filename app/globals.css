@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #1a1a2e;
+  --brand-mid: #16213e;
+  --accent: #e94560;
+  --accent-soft: #ff6b6b;
+  --gold: #f5a623;
+  --teal: #0fbcb3;
+  --surface: #0f3460;
+  --surface-light: #1a4a7a;
+  --text: #e8f4f8;
+  --text-muted: #8ba3b8;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --border: rgba(255,255,255,0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  background: var(--brand);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.font-mono { font-family: 'Courier New', monospace; }
+
+/* Inputs */
+input, textarea, select {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.55rem 0.85rem;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: rgba(255,255,255,0.09);
+}
+input[type="number"] { font-family: 'Courier New', monospace; letter-spacing: 0.03em; }
+
+label {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+/* Cards */
+.card {
+  background: var(--brand-mid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.card-dark {
+  background: rgba(15,52,96,0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-soft); transform: translateY(-1px); }
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.14); }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { filter: brightness(1.1); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 0.35rem 0.9rem; font-size: 0.82rem; }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.badge-tpv1 { background: rgba(15,188,179,0.2); color: var(--teal); border: 1px solid rgba(15,188,179,0.4); }
+.badge-tpv2 { background: rgba(245,166,35,0.2); color: var(--gold); border: 1px solid rgba(245,166,35,0.4); }
+.badge-success { background: rgba(46,204,113,0.2); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
+.badge-manana { background: rgba(245,166,35,0.15); color: var(--gold); }
+.badge-tarde  { background: rgba(233,69,96,0.15);  color: var(--accent-soft); }
+.badge-completo { background: rgba(15,188,179,0.15); color: var(--teal); }
+
+/* Divider */
+.divider { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+
+/* Stat box */
+.stat-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+.stat-value {
+  font-size: 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: -0.02em;
+}
+.stat-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Nav */
+.nav-link {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-link:hover, .nav-link.active { color: var(--text); background: rgba(255,255,255,0.08); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* Total highlight */
+.total-row {
+  background: rgba(15,188,179,0.08);
+  border: 1px solid rgba(15,188,179,0.25);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
