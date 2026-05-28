@@ -85,7 +85,7 @@ export default function Home() {
           <div key={c.id} className="card-dark" style={{ marginBottom: '0.6rem', display: 'grid', gridTemplateColumns: '120px 1fr 1fr 1fr 1fr', gap: '1rem', alignItems: 'center' }}>
             <span className={`badge badge-${c.turno}`}>{c.turno}</span>
             <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Efectivo ventas</div><div style={{ fontFamily: 'Courier New', color: 'var(--success)' }}>{fmt(c.total_efectivo_ventas ?? 0)}</div></div>
-            <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Tarjeta</div><div style={{ fontFamily: 'Courier New', color: 'var(--teal)' }}>{fmt(c.total_tarjeta ?? 0)}</div></div>
+            <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Tarjeta</div><div style={{ fontFamily: 'Courier New', color: 'var(--teal)' }}>{fmt(c.total_tarjeta_ventas ?? 0)}</div></div>
             <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Fondo siguiente</div><div style={{ fontFamily: 'Courier New', color: 'var(--gold)' }}>{fmt(c.fondo_siguiente_dia ?? 0)}</div></div>
             <div><div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Total ventas</div><div style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>{fmt(c.total_ventas ?? 0)}</div></div>
           </div>
