@@ -10,9 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 export async function signIn(email: string, password: string) {
   return await supabase.auth.signInWithPassword({ email, password })
 }
-export async function signOut() {
-  await supabase.auth.signOut()
-}
+export async function signOut() { await supabase.auth.signOut() }
 export async function getSession() {
   const { data } = await supabase.auth.getSession()
   return data.session
@@ -38,14 +36,20 @@ export interface CierreCaja {
   tpv1_tarjeta: number
   tpv2_efectivo: number
   tpv2_tarjeta: number
+  datafono1_cierre: number
+  datafono2_cierre: number
+  efectivo_contado: number
   pagos_proveedor: number
   retirada_efectivo: number
   // computed
   total_efectivo_ventas?: number
-  total_tarjeta?: number
-  efectivo_en_caja?: number
-  fondo_siguiente_dia?: number
+  total_tarjeta_ventas?: number
+  total_datafono?: number
   total_ventas?: number
+  efectivo_esperado?: number
+  diferencia_efectivo?: number
+  diferencia_datafono?: number
+  fondo_siguiente_dia?: number
   notas?: string
   cerrado_por?: string
   created_at?: string
