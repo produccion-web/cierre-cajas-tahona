@@ -21,7 +21,7 @@ export default function Home() {
   const ultimo = cierres[0]
   const totalVentas = cierres.reduce((s, c) => s + (c.total_ventas ?? 0), 0)
   const totalEfectivo = cierres.reduce((s, c) => s + (c.total_efectivo_ventas ?? 0), 0)
-  const totalTarjeta = cierres.reduce((s, c) => s + (c.total_tarjeta ?? 0), 0)
+  const totalTarjeta = cierres.reduce((s, c) => s + (c.total_tarjeta_ventas ?? 0), 0)
   const totalPagos = cierres.reduce((s, c) => s + c.pagos_proveedor, 0)
 
   return (
