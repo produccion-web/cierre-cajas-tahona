@@ -42,7 +42,7 @@ export default function Historial() {
 
   const totalVentas = cierres.reduce((s, c) => s + (c.total_ventas ?? 0), 0)
   const totalEf = cierres.reduce((s, c) => s + (c.total_efectivo_ventas ?? 0), 0)
-  const totalTar = cierres.reduce((s, c) => s + (c.total_tarjeta ?? 0), 0)
+  const totalTar = cierres.reduce((s, c) => s + (c.total_tarjeta_ventas ?? 0), 0)
   const totalPagos = cierres.reduce((s, c) => s + c.pagos_proveedor, 0)
 
   const porFecha: Record<string, CierreConPagos[]> = {}
@@ -99,7 +99,7 @@ export default function Historial() {
                   <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr 1fr 1fr 1fr auto', gap: '0.75rem', alignItems: 'center' }}>
                     <span className={`badge badge-${c.turno}`}>{c.turno}</span>
                     <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Ef. ventas</div><div style={{ fontFamily: 'Courier New', fontSize: '0.88rem', color: 'var(--success)' }}>{fmt(c.total_efectivo_ventas ?? 0)}</div></div>
-                    <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Tarjeta</div><div style={{ fontFamily: 'Courier New', fontSize: '0.88rem', color: 'var(--teal)' }}>{fmt(c.total_tarjeta ?? 0)}</div></div>
+                    <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Tarjeta</div><div style={{ fontFamily: 'Courier New', fontSize: '0.88rem', color: 'var(--teal)' }}>{fmt(c.total_tarjeta_ventas ?? 0)}</div></div>
                     <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Fondo sig.</div><div style={{ fontFamily: 'Courier New', fontSize: '0.88rem', color: 'var(--gold)' }}>{fmt(c.fondo_siguiente_dia ?? 0)}</div></div>
                     <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Total ventas</div><div style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>{fmt(c.total_ventas ?? 0)}</div></div>
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
@@ -114,7 +114,9 @@ export default function Historial() {
                       <div><span style={{ color: 'var(--text-muted)' }}>Fondo apertura: </span><span style={{ fontFamily: 'Courier New', color: 'var(--gold)' }}>{fmt(c.fondo_apertura)}</span></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>TPV1 ef/tar: </span><span style={{ fontFamily: 'Courier New' }}>{fmt(c.tpv1_efectivo)} / {fmt(c.tpv1_tarjeta)}</span></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>TPV2 ef/tar: </span><span style={{ fontFamily: 'Courier New' }}>{fmt(c.tpv2_efectivo)} / {fmt(c.tpv2_tarjeta)}</span></div>
-                      <div><span style={{ color: 'var(--text-muted)' }}>Efectivo en caja: </span><span style={{ fontFamily: 'Courier New', color: 'var(--success)' }}>{fmt(c.efectivo_en_caja ?? 0)}</span></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Efectivo esperado: </span><span style={{ fontFamily: 'Courier New', color: 'var(--success)' }}>{fmt(c.efectivo_esperado ?? 0)}</span></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Efectivo contado: </span><span style={{ fontFamily: 'Courier New', color: 'var(--success)' }}>{fmt(c.efectivo_contado)}</span></div>
+                      <div><span style={{ color: 'var(--text-muted)' }}>Dif. efectivo: </span><span style={{ fontFamily: 'Courier New', color: (c.diferencia_efectivo ?? 0) >= 0 ? 'var(--success)' : 'var(--accent)' }}>{fmt(c.diferencia_efectivo ?? 0)}</span></div>
                       <div><span style={{ color: 'var(--text-muted)' }}>Retirada: </span><span style={{ fontFamily: 'Courier New', color: 'var(--accent)' }}>{fmt(c.retirada_efectivo)}</span></div>
                       {c.cerrado_por && <div><span style={{ color: 'var(--text-muted)' }}>Empleado: </span><span>{c.cerrado_por}</span></div>}
                       {c.notas && <div style={{ gridColumn: '1 / -1' }}><span style={{ color: 'var(--text-muted)' }}>Notas: </span><span>{c.notas}</span></div>}
