@@ -1,5 +1,5 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, Turno } from '@/lib/supabase'
 
@@ -51,10 +51,30 @@ function CierreForm() {
     efectivo_contado: '',
     retirada_efectivo: '',
   })
+  const [fondoOrigen, setFondoOrigen] = useState<string>('')  // descripción del origen
   const [pagos, setPagos] = useState<{ concepto: string; importe: number }[]>([])
   const [nuevoPago, setNuevoPago] = useState({ concepto: '', importe: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Al montar, busca el cierre más reciente y arrastra su fondo_siguiente_dia
+  useEffect(() => {
+    async function cargarFondo() {
+      const { data } = await supabase
+        .from('cierres_caja')
+        .select('fecha, fondo_siguiente_dia')
+        .order('fecha', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (data && data.fondo_siguiente_dia != null) {
+        setForm(f => ({ ...f, fondo_apertura: data.fondo_siguiente_dia.toString() }))
+        setFondoOrigen(`Arrastrado del cierre del ${new Date(data.fecha + 'T12:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}`)
+      }
+    }
+    cargarFondo()
+  }, [])
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
@@ -157,10 +177,15 @@ function CierreForm() {
 
         {/* ── Fondo apertura ── */}
         <Section title="Fondo de apertura" color="var(--gold)">
-          <div style={{ maxWidth: '220px' }}>
+          <div style={{ maxWidth: '280px' }}>
             <Field label="Efectivo inicial en caja (€)">
-              <NumInput value={form.fondo_apertura} onChange={v => set('fondo_apertura', v)} />
+              <NumInput value={form.fondo_apertura} onChange={v => { set('fondo_apertura', v); setFondoOrigen('') }} />
             </Field>
+            {fondoOrigen && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--teal)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                ↺ {fondoOrigen}
+              </div>
+            )}
           </div>
         </Section>
 
