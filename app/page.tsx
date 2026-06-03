@@ -8,6 +8,42 @@ function fmt(n: number) {
 }
 function today() { return new Date().toISOString().split('T')[0] }
 
+
+function BancoPendiente() {
+  const [pendiente, setPendiente] = useState<number | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      const { data: cierres } = await supabase.from('cierres_caja').select('retirada_efectivo')
+      const { data: ingresos } = await supabase.from('ingresos_banco').select('importe')
+      const totalRet = (cierres || []).reduce((s: number, c: {retirada_efectivo: number}) => s + (c.retirada_efectivo || 0), 0)
+      const totalIng = (ingresos || []).reduce((s: number, i: {importe: number}) => s + (i.importe || 0), 0)
+      setPendiente(totalRet - totalIng)
+    }
+    load()
+  }, [])
+
+  if (pendiente === null || pendiente <= 0) return null
+
+  return (
+    <div style={{
+      background: 'rgba(245,166,35,0.08)', border: '1px solid rgba(245,166,35,0.3)',
+      borderRadius: '10px', padding: '1rem 1.2rem', marginBottom: '1.5rem',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    }}>
+      <div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.2rem' }}>
+          💰 Pendiente de ingresar en banco
+        </div>
+        <div style={{ fontFamily: 'Courier New', fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--gold)' }}>
+          {pendiente.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+        </div>
+      </div>
+      <a href="/banco" className="btn btn-secondary btn-sm">Registrar ingreso →</a>
+    </div>
+  )
+}
+
 export default function Home() {
   const [cierres, setCierres] = useState<CierreCaja[]>([])
   const [loading, setLoading] = useState(true)
@@ -67,6 +103,8 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <BancoPendiente />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.1rem', color: 'var(--text-muted)' }}>Cierres de hoy</h2>

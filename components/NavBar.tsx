@@ -10,6 +10,7 @@ export default function NavBar() {
     { href: '/', label: 'Inicio' },
     { href: '/cierre', label: 'Nuevo cierre' },
     { href: '/historial', label: 'Historial' },
+    { href: '/banco', label: '🏦 Banco' },
   ]
 
   async function handleLogout() {
