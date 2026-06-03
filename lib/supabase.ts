@@ -55,3 +55,11 @@ export interface CierreCaja {
   created_at?: string
   pagos?: PagoProveedor[]
 }
+
+export interface IngresoBanco {
+  id?: string
+  fecha: string
+  importe: number
+  notas?: string
+  created_at?: string
+}

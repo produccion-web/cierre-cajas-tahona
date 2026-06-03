@@ -82,3 +82,23 @@ CREATE POLICY "solo_autenticados_pagos"
   ON pagos_proveedor FOR ALL
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
+
+-- ============================================================
+--  TABLA INGRESOS EN BANCO (añadir al schema existente)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS ingresos_banco (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  fecha       DATE NOT NULL DEFAULT CURRENT_DATE,
+  importe     NUMERIC(10,2) NOT NULL CHECK (importe > 0),
+  notas       TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_ingresos_fecha ON ingresos_banco(fecha DESC);
+
+ALTER TABLE ingresos_banco ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "solo_autenticados_ingresos"
+  ON ingresos_banco FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');

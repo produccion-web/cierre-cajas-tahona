@@ -169,3 +169,11 @@ label {
   border-radius: 8px;
   padding: 1rem 1.2rem;
 }
+
+/* Quitar flechas arriba/abajo de inputs numéricos */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }

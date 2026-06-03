@@ -35,7 +35,16 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function NumInput({ value, onChange, placeholder = '0.00' }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return <input type="number" step="0.01" min="0" placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} />
+  return (
+    <input
+      type="number" step="0.01" min="0"
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      onKeyDown={e => { if (e.key === 'Enter') e.preventDefault() }}
+      style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' } as React.CSSProperties}
+    />
+  )
 }
 
 function CierreForm() {
@@ -106,7 +115,17 @@ function CierreForm() {
   }
 
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true)
+    e.preventDefault()
+    setError('')
+    if (form.retirada_efectivo === '' || form.retirada_efectivo === null) {
+      setError('El importe de la retirada de efectivo es obligatorio. Introduce 0 si no hay retirada.')
+      return
+    }
+    if (form.efectivo_contado === '') {
+      setError('El efectivo contado es obligatorio.')
+      return
+    }
+    setLoading(true)
     try {
       const { data: cierre, error: err1 } = await supabase
         .from('cierres_caja')
@@ -158,7 +177,7 @@ function CierreForm() {
         <h1 style={{ fontSize: '1.8rem' }}>Nuevo cierre de caja</h1>
       </div>
 
-      <form onSubmit={submit}>
+      <form onSubmit={submit} onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') e.preventDefault() }}>
 
         {/* ── Datos generales ── */}
         <Section title="Datos generales" color="var(--text-muted)">
