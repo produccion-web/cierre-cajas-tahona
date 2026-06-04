@@ -37,11 +37,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function NumInput({ value, onChange, placeholder = '0.00' }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input
-      type="number" step="0.01" min="0"
+      type="number" step="any" min="0"
       placeholder={placeholder}
       value={value}
       onChange={e => onChange(e.target.value)}
-      onKeyDown={e => { if (e.key === 'Enter') e.preventDefault() }}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault()
+      }}
+      onWheel={e => (e.target as HTMLInputElement).blur()}
       style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' } as React.CSSProperties}
     />
   )

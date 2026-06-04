@@ -120,11 +120,13 @@ export default function BancoPage() {
               <div>
                 <label>Importe (€)</label>
                 <input
-                  type="number" step="0.01" min="0.01"
+                  type="number" step="any" min="0.01"
                   placeholder={fmt(pendiente)}
                   value={form.importe}
                   onChange={e => setForm(f => ({ ...f, importe: e.target.value }))}
-                  style={{ MozAppearance: 'textfield' } as React.CSSProperties}
+                  onKeyDown={e => { if (e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
+                  onWheel={e => (e.target as HTMLInputElement).blur()}
+                  style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' } as React.CSSProperties}
                   autoFocus
                 />
               </div>
