@@ -62,6 +62,7 @@ function CierreForm() {
     datafono1_cierre: '', datafono2_cierre: '',
     efectivo_contado: '',
     retirada_efectivo: '',
+    cobros_albaran_efectivo: '',
   })
   const [fondoOrigen, setFondoOrigen] = useState<string>('')  // descripción del origen
   const [pagos, setPagos] = useState<{ concepto: string; importe: number }[]>([])
@@ -103,9 +104,12 @@ function CierreForm() {
   const totalTarVentas = tpv1Tar + tpv2Tar
   const totalVentas    = totalEfVentas + totalTarVentas
   const totalDatafono  = df1 + df2
-  const efEsperado     = fondoApertura + totalEfVentas - totalPagos
+  const cobrosAlbaran  = n(form.cobros_albaran_efectivo)
+  const efEsperado     = fondoApertura + totalEfVentas + cobrosAlbaran - totalPagos
   const difEfectivo    = efContado - efEsperado
   const difDatafono    = totalDatafono - totalTarVentas
+  // Si dif efectivo y dif datafono se compensan => caja cuadrada globalmente
+  const difGlobal      = difEfectivo + difDatafono
   const fondoSiguiente = efContado - retirada
 
   function addPago() {
@@ -141,6 +145,7 @@ function CierreForm() {
           efectivo_contado: efContado,
           pagos_proveedor: totalPagos,
           retirada_efectivo: retirada,
+          cobros_albaran_efectivo: cobrosAlbaran,
           notas: form.notas || null,
           cerrado_por: form.cerrado_por || null,
         })
@@ -308,6 +313,15 @@ function CierreForm() {
           </div>
         </div>
 
+        {/* ── Albaranes cobrados en efectivo ── */}
+        <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(245,166,35,0.25)' }}>
+          <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Cobros de albaranes en efectivo</h2>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>Dinero cobrado en efectivo de albaranes (no registrado en TPV)</p>
+          <div style={{ maxWidth: '220px' }}>
+            <Field label="Importe cobrado (€)"><NumInput value={form.cobros_albaran_efectivo} onChange={v => set('cobros_albaran_efectivo', v)} /></Field>
+          </div>
+        </div>
+
         {/* ── Retirada ── */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(233,69,96,0.25)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--accent-soft)', textTransform: 'uppercase', marginBottom: '1rem' }}>Retirada de efectivo</h2>
@@ -344,11 +358,15 @@ function CierreForm() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
             <div>
               <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Dif. efectivo</div>
-              <div style={{ fontFamily: 'Courier New', color: diffColor(difEfectivo), fontSize: '0.95rem' }}>{diffLabel(difEfectivo)}</div>
+              <div style={{ fontFamily: 'Courier New', color: diffColor(difEfectivo), fontSize: '0.88rem' }}>{diffLabel(difEfectivo)}</div>
             </div>
             <div>
               <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Dif. datáfonos</div>
-              <div style={{ fontFamily: 'Courier New', color: diffColor(difDatafono), fontSize: '0.95rem' }}>{diffLabel(difDatafono)}</div>
+              <div style={{ fontFamily: 'Courier New', color: diffColor(difDatafono), fontSize: '0.88rem' }}>{diffLabel(difDatafono)}</div>
+            </div>
+            <div style={{ background: Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)', borderRadius: '6px', padding: '0.4rem 0.6rem', border: `1px solid ${diffColor(difGlobal)}44` }}>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>⚖ Cuadre global</div>
+              <div style={{ fontFamily: 'Courier New', color: diffColor(difGlobal), fontSize: '0.95rem', fontWeight: 'bold' }}>{diffLabel(difGlobal)}</div>
             </div>
             <div>
               <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fondo mañana</div>

@@ -47,6 +47,7 @@ function ResumenContent() {
   const now = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
   const difEf = cierre.diferencia_efectivo ?? 0
   const difDf = cierre.diferencia_datafono ?? 0
+  const difGlobal = difEf + difDf
 
   return (
     <>
@@ -108,6 +109,14 @@ function ResumenContent() {
           })}
         </div>
 
+        {/* Cobros albaranes */}
+        {(cierre.cobros_albaran_efectivo ?? 0) > 0 && (
+          <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(245,166,35,0.25)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.5rem' }}>Cobros albaranes efectivo</div>
+            <div style={{ fontFamily: 'Courier New', fontSize: '1.1rem', color: 'var(--gold)', fontWeight: 'bold' }}>{fmt(cierre.cobros_albaran_efectivo ?? 0)}</div>
+          </div>
+        )}
+
         {/* Datáfonos */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(15,188,179,0.25)' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.75rem' }}>Cierres de datáfonos</div>
@@ -151,6 +160,20 @@ function ResumenContent() {
         )}
 
         {/* Totales */}
+        {/* Cuadre global */}
+        <div style={{ marginBottom: '1rem', background: Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.08)' : 'rgba(231,76,60,0.08)', border: `1px solid ${Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.3)' : 'rgba(231,76,60,0.3)'}`, borderRadius: '10px', padding: '1rem 1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>⚖ Cuadre global (efectivo + datáfonos)</div>
+            <div style={{ fontFamily: 'Courier New', fontSize: '1.3rem', fontWeight: 'bold', color: Math.abs(difGlobal) < 0.01 ? 'var(--success)' : 'var(--accent)', marginTop: '0.2rem' }}>
+              {Math.abs(difGlobal) < 0.01 ? '✓ CAJA CUADRADA' : difGlobal > 0 ? `▲ Sobran ${fmt(difGlobal)}` : `▼ Faltan ${fmt(Math.abs(difGlobal))}`}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+            <div>Dif. efectivo: <span style={{ fontFamily: 'Courier New', color: Math.abs(difEf) < 0.01 ? 'var(--success)' : difEf > 0 ? 'var(--teal)' : 'var(--accent)' }}>{difEf > 0 ? '+' : ''}{fmt(difEf)}</span></div>
+            <div>Dif. datáfonos: <span style={{ fontFamily: 'Courier New', color: Math.abs(difDf) < 0.01 ? 'var(--success)' : difDf > 0 ? 'var(--teal)' : 'var(--accent)' }}>{difDf > 0 ? '+' : ''}{fmt(difDf)}</span></div>
+          </div>
+        </div>
+
         <div className="total-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
           <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total ventas efectivo</div><div style={{ fontFamily: 'Courier New', color: 'var(--success)', fontSize: '1.1rem' }}>{fmt(cierre.total_efectivo_ventas ?? 0)}</div></div>
           <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total ventas tarjeta</div><div style={{ fontFamily: 'Courier New', color: 'var(--teal)', fontSize: '1.1rem' }}>{fmt(cierre.total_tarjeta_ventas ?? 0)}</div></div>
@@ -205,10 +228,21 @@ function ResumenContent() {
         <Row label="Diferencia:" value={diffLabel(difEf)} bold color={diffColor(difEf)} />
 
         <div className="pos-sep">================================</div>
+        {(cierre.cobros_albaran_efectivo ?? 0) > 0 && <>
+          <div className="pos-sep">--------------------------------</div>
+          <div className="pos-section">COBROS ALBARAN EFECTIVO</div>
+          <Row label="Importe:" value={fmt(cierre.cobros_albaran_efectivo ?? 0)} />
+        </>}
+        <div className="pos-sep">================================</div>
         <Row label="TOTAL VENTAS:" value={fmt(cierre.total_ventas ?? 0)} bold />
         <Row label="  Efectivo:" value={fmt(cierre.total_efectivo_ventas ?? 0)} />
         <Row label="  Tarjeta:" value={fmt(cierre.total_tarjeta_ventas ?? 0)} />
 
+        <div className="pos-sep">================================</div>
+        <div className="pos-section">CUADRE GLOBAL</div>
+        <Row label="Dif. efectivo:" value={difEf >= 0 ? '+'+fmt(difEf) : fmt(difEf)} color={difEf >= 0 ? '#2ecc71' : '#e74c3c'} />
+        <Row label="Dif. datafonos:" value={difDf >= 0 ? '+'+fmt(difDf) : fmt(difDf)} color={difDf >= 0 ? '#2ecc71' : '#e74c3c'} />
+        <Row label="RESULTADO:" value={Math.abs(difGlobal) < 0.01 ? 'CUADRADA' : difGlobal > 0 ? 'SOBRAN '+fmt(difGlobal) : 'FALTAN '+fmt(Math.abs(difGlobal))} bold color={Math.abs(difGlobal) < 0.01 ? '#2ecc71' : '#e74c3c'} />
         <div className="pos-sep">================================</div>
         <Row label="Efectivo contado:" value={fmt(cierre.efectivo_contado)} />
         {cierre.retirada_efectivo > 0 && <Row label="Retirada:" value={'-' + fmt(cierre.retirada_efectivo)} />}
