@@ -41,6 +41,7 @@ export interface CierreCaja {
   efectivo_contado: number
   pagos_proveedor: number
   retirada_efectivo: number
+  cobros_albaran_efectivo: number
   // computed
   total_efectivo_ventas?: number
   total_tarjeta_ventas?: number
