@@ -45,7 +45,12 @@ function ResumenContent() {
   if (!cierre) return <p style={{ color: 'var(--accent)', padding: '3rem', textAlign: 'center' }}>No se encontró el cierre</p>
 
   const now = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-  const difEf = cierre.diferencia_efectivo ?? 0
+  // Recalcular efEsperado incluyendo cobros_albaran_efectivo
+  const efEsperadoReal = (cierre.fondo_apertura ?? 0)
+    + (cierre.total_efectivo_ventas ?? 0)
+    + (cierre.cobros_albaran_efectivo ?? 0)
+    - (cierre.pagos_proveedor ?? 0)
+  const difEf = (cierre.efectivo_contado ?? 0) - efEsperadoReal
   const difDf = cierre.diferencia_datafono ?? 0
   const difGlobal = difEf + difDf
 
@@ -135,7 +140,7 @@ function ResumenContent() {
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(46,204,113,0.25)' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--success)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.75rem' }}>Recuento efectivo</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', fontSize: '0.9rem' }}>
-            <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Esperado</div><div style={{ fontFamily: 'Courier New' }}>{fmt(cierre.efectivo_esperado ?? 0)}</div></div>
+            <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Esperado</div><div style={{ fontFamily: 'Courier New' }}>{fmt(efEsperadoReal)}</div></div>
             <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Contado</div><div style={{ fontFamily: 'Courier New', fontWeight: 'bold' }}>{fmt(cierre.efectivo_contado)}</div></div>
             <div>
               <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Diferencia</div>
@@ -223,7 +228,7 @@ function ResumenContent() {
 
         <div className="pos-sep">--------------------------------</div>
         <div className="pos-section">RECUENTO EFECTIVO</div>
-        <Row label="Esperado:" value={fmt(cierre.efectivo_esperado ?? 0)} />
+        <Row label="Esperado:" value={fmt(efEsperadoReal)} />
         <Row label="Contado:" value={fmt(cierre.efectivo_contado)} />
         <Row label="Diferencia:" value={diffLabel(difEf)} bold color={diffColor(difEf)} />
 
