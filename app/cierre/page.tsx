@@ -7,15 +7,6 @@ function fmt(n: number) { return n.toLocaleString('es-ES', { style: 'currency', 
 function today() { return new Date().toISOString().split('T')[0] }
 function n(s: string) { return parseFloat(s) || 0 }
 
-function diffColor(d: number) {
-  if (Math.abs(d) < 0.01) return 'var(--success)'
-  return d > 0 ? 'var(--teal)' : 'var(--accent)'
-}
-function diffLabel(d: number) {
-  if (Math.abs(d) < 0.01) return '✓ Cuadrado'
-  return d > 0 ? `▲ Sobran ${fmt(d)}` : `▼ Faltan ${fmt(Math.abs(d))}`
-}
-
 function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
   return (
     <div className="card" style={{ marginBottom: '1rem', borderColor: color + '44' }}>
@@ -41,9 +32,7 @@ function NumInput({ value, onChange, placeholder = '0.00' }: { value: string; on
       placeholder={placeholder}
       value={value}
       onChange={e => onChange(e.target.value)}
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault()
-      }}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault() }}
       onWheel={e => (e.target as HTMLInputElement).blur()}
       style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' } as React.CSSProperties}
     />
@@ -52,7 +41,6 @@ function NumInput({ value, onChange, placeholder = '0.00' }: { value: string; on
 
 function CierreForm() {
   const router = useRouter()
-
   const [form, setForm] = useState({
     fecha: today(), turno: 'completo' as Turno,
     cerrado_por: '', notas: '',
@@ -61,16 +49,15 @@ function CierreForm() {
     tpv2_efectivo: '', tpv2_tarjeta: '',
     datafono1_cierre: '', datafono2_cierre: '',
     efectivo_contado: '',
-    retirada_efectivo: '',
     cobros_albaran_efectivo: '',
+    retirada_efectivo: '',
   })
-  const [fondoOrigen, setFondoOrigen] = useState<string>('')  // descripción del origen
+  const [fondoOrigen, setFondoOrigen] = useState('')
   const [pagos, setPagos] = useState<{ concepto: string; importe: number }[]>([])
   const [nuevoPago, setNuevoPago] = useState({ concepto: '', importe: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Al montar, busca el cierre más reciente y arrastra su fondo_siguiente_dia
   useEffect(() => {
     async function cargarFondo() {
       const { data } = await supabase
@@ -80,7 +67,6 @@ function CierreForm() {
         .order('created_at', { ascending: false })
         .limit(1)
         .single()
-
       if (data && data.fondo_siguiente_dia != null) {
         setForm(f => ({ ...f, fondo_apertura: data.fondo_siguiente_dia.toString() }))
         setFondoOrigen(`Arrastrado del cierre del ${new Date(data.fecha + 'T12:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}`)
@@ -91,25 +77,20 @@ function CierreForm() {
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
-  // Cálculos
   const fondoApertura  = n(form.fondo_apertura)
   const tpv1Ef = n(form.tpv1_efectivo);  const tpv1Tar = n(form.tpv1_tarjeta)
   const tpv2Ef = n(form.tpv2_efectivo);  const tpv2Tar = n(form.tpv2_tarjeta)
   const df1    = n(form.datafono1_cierre); const df2 = n(form.datafono2_cierre)
-  const efContado  = n(form.efectivo_contado)
-  const totalPagos = pagos.reduce((s, p) => s + p.importe, 0)
-  const retirada   = n(form.retirada_efectivo)
+  const efContado      = n(form.efectivo_contado)
+  const cobrosAlbaran  = n(form.cobros_albaran_efectivo)
+  const totalPagos     = pagos.reduce((s, p) => s + p.importe, 0)
+  const retirada       = n(form.retirada_efectivo)
 
   const totalEfVentas  = tpv1Ef + tpv2Ef
   const totalTarVentas = tpv1Tar + tpv2Tar
   const totalVentas    = totalEfVentas + totalTarVentas
   const totalDatafono  = df1 + df2
-  const cobrosAlbaran  = n(form.cobros_albaran_efectivo)
   const efEsperado     = fondoApertura + totalEfVentas + cobrosAlbaran - totalPagos
-  const difEfectivo    = efContado - efEsperado
-  const difDatafono    = totalDatafono - totalTarVentas
-  // Si dif efectivo y dif datafono se compensan => caja cuadrada globalmente
-  const difGlobal      = difEfectivo + difDatafono
   const fondoSiguiente = efContado - retirada
 
   function addPago() {
@@ -124,14 +105,8 @@ function CierreForm() {
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    if (form.retirada_efectivo === '' || form.retirada_efectivo === null) {
-      setError('El importe de la retirada de efectivo es obligatorio. Introduce 0 si no hay retirada.')
-      return
-    }
-    if (form.efectivo_contado === '') {
-      setError('El efectivo contado es obligatorio.')
-      return
-    }
+    if (form.efectivo_contado === '') { setError('El efectivo contado es obligatorio.'); return }
+    if (form.retirada_efectivo === '') { setError('El importe de la retirada es obligatorio. Introduce 0 si no hay retirada.'); return }
     setLoading(true)
     try {
       const { data: cierre, error: err1 } = await supabase
@@ -143,9 +118,9 @@ function CierreForm() {
           tpv2_efectivo: tpv2Ef, tpv2_tarjeta: tpv2Tar,
           datafono1_cierre: df1, datafono2_cierre: df2,
           efectivo_contado: efContado,
+          cobros_albaran_efectivo: cobrosAlbaran,
           pagos_proveedor: totalPagos,
           retirada_efectivo: retirada,
-          cobros_albaran_efectivo: cobrosAlbaran,
           notas: form.notas || null,
           cerrado_por: form.cerrado_por || null,
         })
@@ -166,18 +141,6 @@ function CierreForm() {
     } finally { setLoading(false) }
   }
 
-  const diffBadge = (d: number) => (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-      background: Math.abs(d) < 0.01 ? 'rgba(46,204,113,0.12)' : d > 0 ? 'rgba(15,188,179,0.12)' : 'rgba(231,76,60,0.12)',
-      border: `1px solid ${diffColor(d)}44`,
-      borderRadius: '6px', padding: '0.45rem 0.8rem',
-      fontFamily: 'Courier New', fontSize: '0.88rem', color: diffColor(d),
-    }}>
-      {diffLabel(d)}
-    </div>
-  )
-
   return (
     <div className="fade-in">
       <div style={{ marginBottom: '1.8rem' }}>
@@ -187,7 +150,7 @@ function CierreForm() {
 
       <form onSubmit={submit} onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') e.preventDefault() }}>
 
-        {/* ── Datos generales ── */}
+        {/* Datos generales */}
         <Section title="Datos generales" color="var(--text-muted)">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px,1fr))', gap: '0.9rem' }}>
             <Field label="Fecha"><input type="date" value={form.fecha} onChange={e => set('fecha', e.target.value)} /></Field>
@@ -202,23 +165,20 @@ function CierreForm() {
           </div>
         </Section>
 
-        {/* ── Fondo apertura ── */}
+        {/* Fondo apertura */}
         <Section title="Fondo de apertura" color="var(--gold)">
           <div style={{ maxWidth: '280px' }}>
             <Field label="Efectivo inicial en caja (€)">
               <NumInput value={form.fondo_apertura} onChange={v => { set('fondo_apertura', v); setFondoOrigen('') }} />
             </Field>
             {fondoOrigen && (
-              <div style={{ fontSize: '0.75rem', color: 'var(--teal)', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                ↺ {fondoOrigen}
-              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--teal)', marginTop: '0.35rem' }}>↺ {fondoOrigen}</div>
             )}
           </div>
         </Section>
 
-        {/* ── TPVs ── */}
+        {/* TPVs */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-          {/* TPV1 */}
           <div className="card" style={{ borderColor: 'rgba(15,188,179,0.3)' }}>
             <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--teal)', textTransform: 'uppercase', marginBottom: '1rem' }}>TPV 1 — Ventas</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -229,8 +189,6 @@ function CierreForm() {
               </div>
             </div>
           </div>
-
-          {/* TPV2 */}
           <div className="card" style={{ borderColor: 'rgba(245,166,35,0.3)' }}>
             <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '1rem' }}>TPV 2 — Ventas</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -243,23 +201,19 @@ function CierreForm() {
           </div>
         </div>
 
-        {/* ── Cierres datáfonos ── */}
+        {/* Datáfonos */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(15,188,179,0.25)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--teal)', textTransform: 'uppercase', marginBottom: '1rem' }}>Cierres de datáfonos</h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <Field label="Datáfono 1 — importe cierre (€)"><NumInput value={form.datafono1_cierre} onChange={v => set('datafono1_cierre', v)} /></Field>
             <Field label="Datáfono 2 — importe cierre (€)"><NumInput value={form.datafono2_cierre} onChange={v => set('datafono2_cierre', v)} /></Field>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>Diferencia con ventas tarjeta</div>
-              {diffBadge(difDatafono)}
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                Cierre: {fmt(totalDatafono)} · Ventas: {fmt(totalTarVentas)}
-              </div>
+            <div style={{ background: 'rgba(15,188,179,0.07)', borderRadius: '6px', padding: '0.55rem 0.85rem', fontFamily: 'Courier New', fontSize: '0.9rem' }}>
+              Total cierre: <strong style={{ color: 'var(--teal)' }}>{fmt(totalDatafono)}</strong>
             </div>
           </div>
         </div>
 
-        {/* ── Pagos proveedores ── */}
+        {/* Pagos proveedores */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(231,76,60,0.2)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--accent-soft)', textTransform: 'uppercase', marginBottom: '0.8rem' }}>Pagos a proveedores en efectivo</h2>
           {pagos.map((p, i) => (
@@ -277,23 +231,29 @@ function CierreForm() {
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
             <input type="text" placeholder="Concepto del pago" value={nuevoPago.concepto}
               onChange={e => setNuevoPago(n => ({ ...n, concepto: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addPago())} style={{ flex: 1 }} />
-            <input type="number" step="0.01" min="0" placeholder="€" value={nuevoPago.importe}
-              onChange={e => setNuevoPago(n => ({ ...n, importe: e.target.value }))}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addPago())} style={{ width: '110px' }} />
+              style={{ flex: 1 }} />
+            <NumInput value={nuevoPago.importe} onChange={v => setNuevoPago(n => ({ ...n, importe: v }))} placeholder="€" />
             <button type="button" className="btn btn-secondary btn-sm" onClick={addPago}>+ Añadir</button>
           </div>
           {totalPagos > 0 && (
             <div style={{ textAlign: 'right', marginTop: '0.5rem', fontFamily: 'Courier New', fontSize: '0.88rem', color: 'var(--accent)' }}>
-              Total pagos: {fmt(totalPagos)}
+              Total: {fmt(totalPagos)}
             </div>
           )}
         </div>
 
-        {/* ── Recuento efectivo al cierre ── */}
+        {/* Albaranes */}
+        <Section title="Cobros de albaranes en efectivo" color="var(--gold)">
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>Dinero cobrado en efectivo de albaranes (no registrado en TPV)</p>
+          <div style={{ maxWidth: '220px' }}>
+            <Field label="Importe cobrado (€)"><NumInput value={form.cobros_albaran_efectivo} onChange={v => set('cobros_albaran_efectivo', v)} /></Field>
+          </div>
+        </Section>
+
+        {/* Recuento efectivo */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(46,204,113,0.3)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--success)', textTransform: 'uppercase', marginBottom: '1rem' }}>Recuento de efectivo al cierre</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <Field label="Efectivo contado en caja (€)">
               <NumInput value={form.efectivo_contado} onChange={v => set('efectivo_contado', v)} />
             </Field>
@@ -303,26 +263,13 @@ function CierreForm() {
                 {fmt(efEsperado)}
               </div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                {fmt(fondoApertura)} + {fmt(totalEfVentas)} − {fmt(totalPagos)}
+                {fmt(fondoApertura)} + {fmt(totalEfVentas)}{cobrosAlbaran > 0 ? ` + ${fmt(cobrosAlbaran)}` : ''} − {fmt(totalPagos)}
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>Diferencia</div>
-              {diffBadge(difEfectivo)}
-            </div>
           </div>
         </div>
 
-        {/* ── Albaranes cobrados en efectivo ── */}
-        <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(245,166,35,0.25)' }}>
-          <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--gold)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Cobros de albaranes en efectivo</h2>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>Dinero cobrado en efectivo de albaranes (no registrado en TPV)</p>
-          <div style={{ maxWidth: '220px' }}>
-            <Field label="Importe cobrado (€)"><NumInput value={form.cobros_albaran_efectivo} onChange={v => set('cobros_albaran_efectivo', v)} /></Field>
-          </div>
-        </div>
-
-        {/* ── Retirada ── */}
+        {/* Retirada */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(233,69,96,0.25)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--accent-soft)', textTransform: 'uppercase', marginBottom: '1rem' }}>Retirada de efectivo</h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
@@ -339,13 +286,13 @@ function CierreForm() {
           </div>
         </div>
 
-        {/* ── Notas ── */}
+        {/* Notas */}
         <div className="card" style={{ marginBottom: '1.2rem' }}>
           <label>Notas (opcional)</label>
           <textarea rows={2} placeholder="Observaciones…" value={form.notas} onChange={e => set('notas', e.target.value)} style={{ resize: 'vertical' }} />
         </div>
 
-        {/* ── Resumen final ── */}
+        {/* Resumen */}
         <div style={{ background: 'rgba(15,188,179,0.05)', border: '1px solid rgba(15,188,179,0.2)', borderRadius: '10px', padding: '1.2rem', marginBottom: '1.5rem' }}>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.8rem' }}>Resumen del cierre</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1rem', marginBottom: '0.75rem' }}>
@@ -355,23 +302,9 @@ function CierreForm() {
             <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Pagos prov.</div><div style={{ fontFamily: 'Courier New', color: 'var(--accent)' }}>{fmt(totalPagos)}</div></div>
           </div>
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.6rem 0' }} />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
-            <div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Dif. efectivo</div>
-              <div style={{ fontFamily: 'Courier New', color: diffColor(difEfectivo), fontSize: '0.88rem' }}>{diffLabel(difEfectivo)}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Dif. datáfonos</div>
-              <div style={{ fontFamily: 'Courier New', color: diffColor(difDatafono), fontSize: '0.88rem' }}>{diffLabel(difDatafono)}</div>
-            </div>
-            <div style={{ background: Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)', borderRadius: '6px', padding: '0.4rem 0.6rem', border: `1px solid ${diffColor(difGlobal)}44` }}>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>⚖ Cuadre global</div>
-              <div style={{ fontFamily: 'Courier New', color: diffColor(difGlobal), fontSize: '0.95rem', fontWeight: 'bold' }}>{diffLabel(difGlobal)}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fondo mañana</div>
-              <div style={{ fontFamily: 'Courier New', fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--teal)' }}>{fmt(fondoSiguiente)}</div>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Efectivo contado</div><div style={{ fontFamily: 'Courier New', color: 'var(--success)', fontSize: '1.1rem' }}>{fmt(efContado)}</div></div>
+            <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fondo mañana</div><div style={{ fontFamily: 'Courier New', fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--teal)' }}>{fmt(fondoSiguiente)}</div></div>
           </div>
         </div>
 
