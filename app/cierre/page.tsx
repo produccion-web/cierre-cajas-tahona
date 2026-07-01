@@ -253,19 +253,10 @@ function CierreForm() {
         {/* Recuento efectivo */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(46,204,113,0.3)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--success)', textTransform: 'uppercase', marginBottom: '1rem' }}>Recuento de efectivo al cierre</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
+          <div style={{ maxWidth: '280px' }}>
             <Field label="Efectivo contado en caja (€)">
               <NumInput value={form.efectivo_contado} onChange={v => set('efectivo_contado', v)} />
             </Field>
-            <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem' }}>Efectivo esperado</div>
-              <div style={{ fontFamily: 'Courier New', fontSize: '1rem', color: 'var(--text-muted)', padding: '0.55rem 0.85rem', background: 'rgba(255,255,255,0.04)', borderRadius: '6px', border: '1px solid var(--border)' }}>
-                {fmt(efEsperado)}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                {fmt(fondoApertura)} + {fmt(totalEfVentas)}{cobrosAlbaran > 0 ? ` + ${fmt(cobrosAlbaran)}` : ''} − {fmt(totalPagos)}
-              </div>
-            </div>
           </div>
         </div>
 
