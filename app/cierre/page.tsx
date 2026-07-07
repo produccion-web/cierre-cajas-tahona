@@ -92,6 +92,9 @@ function CierreForm() {
   const totalDatafono  = df1 + df2
   const efEsperado     = fondoApertura + totalEfVentas + cobrosAlbaran - totalPagos
   const fondoSiguiente = efContado - retirada
+  const difEfectivo    = efContado - efEsperado
+  const difDatafono    = totalDatafono - totalTarVentas
+  const difGlobal      = difEfectivo + difDatafono
 
   function addPago() {
     if (!nuevoPago.concepto.trim()) { setError('El concepto es obligatorio'); return }
@@ -207,8 +210,19 @@ function CierreForm() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <Field label="Datáfono 1 — importe cierre (€)"><NumInput value={form.datafono1_cierre} onChange={v => set('datafono1_cierre', v)} /></Field>
             <Field label="Datáfono 2 — importe cierre (€)"><NumInput value={form.datafono2_cierre} onChange={v => set('datafono2_cierre', v)} /></Field>
-            <div style={{ background: 'rgba(15,188,179,0.07)', borderRadius: '6px', padding: '0.55rem 0.85rem', fontFamily: 'Courier New', fontSize: '0.9rem' }}>
-              Total cierre: <strong style={{ color: 'var(--teal)' }}>{fmt(totalDatafono)}</strong>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Diferencia con ventas tarjeta</div>
+              <div style={{
+                background: Math.abs(difDatafono) < 0.01 ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)',
+                border: `1px solid ${Math.abs(difDatafono) < 0.01 ? 'rgba(46,204,113,0.35)' : 'rgba(231,76,60,0.35)'}`,
+                borderRadius: '6px', padding: '0.5rem 0.75rem', fontFamily: 'Courier New', fontSize: '0.95rem', fontWeight: 'bold',
+                color: Math.abs(difDatafono) < 0.01 ? 'var(--success)' : 'var(--accent)',
+              }}>
+                {Math.abs(difDatafono) < 0.01 ? '✓ Cuadrado' : difDatafono > 0 ? `▲ +${fmt(difDatafono)}` : `▼ ${fmt(difDatafono)}`}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                Cierre {fmt(totalDatafono)} · Tarjeta {fmt(totalTarVentas)}
+              </div>
             </div>
           </div>
         </div>
@@ -253,10 +267,24 @@ function CierreForm() {
         {/* Recuento efectivo */}
         <div className="card" style={{ marginBottom: '1rem', borderColor: 'rgba(46,204,113,0.3)' }}>
           <h2 style={{ fontSize: '0.78rem', letterSpacing: '0.08em', color: 'var(--success)', textTransform: 'uppercase', marginBottom: '1rem' }}>Recuento de efectivo al cierre</h2>
-          <div style={{ maxWidth: '280px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'end' }}>
             <Field label="Efectivo contado en caja (€)">
               <NumInput value={form.efectivo_contado} onChange={v => set('efectivo_contado', v)} />
             </Field>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Diferencia efectivo</div>
+              <div style={{
+                background: Math.abs(difEfectivo) < 0.01 ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)',
+                border: `1px solid ${Math.abs(difEfectivo) < 0.01 ? 'rgba(46,204,113,0.35)' : 'rgba(231,76,60,0.35)'}`,
+                borderRadius: '6px', padding: '0.5rem 0.75rem', fontFamily: 'Courier New', fontSize: '0.95rem', fontWeight: 'bold',
+                color: Math.abs(difEfectivo) < 0.01 ? 'var(--success)' : 'var(--accent)',
+              }}>
+                {Math.abs(difEfectivo) < 0.01 ? '✓ Cuadrado' : difEfectivo > 0 ? `▲ Sobran ${fmt(difEfectivo)}` : `▼ Faltan ${fmt(Math.abs(difEfectivo))}`}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                Esperado {fmt(efEsperado)} · Contado {fmt(efContado)}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -296,6 +324,27 @@ function CierreForm() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Efectivo contado</div><div style={{ fontFamily: 'Courier New', color: 'var(--success)', fontSize: '1.1rem' }}>{fmt(efContado)}</div></div>
             <div><div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Fondo mañana</div><div style={{ fontFamily: 'Courier New', fontSize: '1.3rem', fontWeight: 'bold', color: 'var(--teal)' }}>{fmt(fondoSiguiente)}</div></div>
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.8rem 0' }} />
+
+          {/* Cuadre global */}
+          <div style={{
+            background: Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.1)' : 'rgba(231,76,60,0.1)',
+            border: `1px solid ${Math.abs(difGlobal) < 0.01 ? 'rgba(46,204,113,0.35)' : 'rgba(231,76,60,0.35)'}`,
+            borderRadius: '8px', padding: '0.9rem 1.1rem',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>⚖ Cuadre global (efectivo + datáfonos)</div>
+              <div style={{ fontFamily: 'Courier New', fontSize: '1.3rem', fontWeight: 'bold', color: Math.abs(difGlobal) < 0.01 ? 'var(--success)' : 'var(--accent)', marginTop: '0.2rem' }}>
+                {Math.abs(difGlobal) < 0.01 ? '✓ CAJA CUADRADA' : difGlobal > 0 ? `▲ Sobran ${fmt(difGlobal)}` : `▼ Faltan ${fmt(Math.abs(difGlobal))}`}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <div>Dif. efectivo: <span style={{ fontFamily: 'Courier New', color: Math.abs(difEfectivo) < 0.01 ? 'var(--success)' : difEfectivo > 0 ? 'var(--teal)' : 'var(--accent)' }}>{difEfectivo >= 0 ? '+' : ''}{fmt(difEfectivo)}</span></div>
+              <div>Dif. datáfonos: <span style={{ fontFamily: 'Courier New', color: Math.abs(difDatafono) < 0.01 ? 'var(--success)' : difDatafono > 0 ? 'var(--teal)' : 'var(--accent)' }}>{difDatafono >= 0 ? '+' : ''}{fmt(difDatafono)}</span></div>
+            </div>
           </div>
         </div>
 
